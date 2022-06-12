@@ -29,7 +29,7 @@ func main() {
 		next, err := results.NextPage()
 		if err != nil {
 			// handle err
-    }
+	}
   	printResults(next)
   }
 }
@@ -37,6 +37,6 @@ func main() {
 func printResults(results *umod.SearchResponse) {
 	for _, r := range results.Data {
 		fmt.Println(r)
-  }
+	}
 }
 ```
