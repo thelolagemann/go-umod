@@ -22,7 +22,13 @@ var (
 	}
 )
 
-// SearchResponse is the response from the search endpoint.
+// SearchResponse is the structure of the response returned by the search endpoint.
+// It contains the list of plugins found, the total number of plugins found, the
+// total number of pages of plugins found, the URL of the previous page, the URL
+// of the next page, and the URL of the last page. The list of plugins is sorted
+// by the latest release date.
+//
+// See: https://umod.org/plugins/search.json
 type SearchResponse struct {
 	CurrentPage  int      `json:"current_page"`
 	Data         []Plugin `json:"data"`
@@ -38,6 +44,8 @@ type SearchResponse struct {
 	Total        int      `json:"total"`
 }
 
+// PrevPage returns the previous page of the search response, or an error if
+// there is no previous page.
 func (s SearchResponse) PrevPage() (SearchResponse, error) {
 	if s.PrevPageURL == "" {
 		return s, fmt.Errorf("no previous page")
@@ -45,6 +53,8 @@ func (s SearchResponse) PrevPage() (SearchResponse, error) {
 	return doRequest(fmt.Sprintf("%v%v", baseURL, s.PrevPageURL))
 }
 
+// NextPage returns the next page of the search response, or an error if
+// there is no next page.
 func (s SearchResponse) NextPage() (SearchResponse, error) {
 	if s.NextPageURL == "" {
 		return s, fmt.Errorf("no next page")
@@ -52,6 +62,8 @@ func (s SearchResponse) NextPage() (SearchResponse, error) {
 	return doRequest(fmt.Sprintf("%v%v", baseURL, s.NextPageURL))
 }
 
+// LastPage returns the last page of the search response, or an error if
+// there is no last page (although technically that should never happen).
 func (s SearchResponse) LastPage() (SearchResponse, error) {
 	if s.LastPageURL == "" {
 		return s, fmt.Errorf("no last page") // this should never happen ?
@@ -59,6 +71,8 @@ func (s SearchResponse) LastPage() (SearchResponse, error) {
 	return doRequest(fmt.Sprintf("%v%v", baseURL, s.LastPageURL))
 }
 
+// Plugin is the structure of the plugins returned by the umod.org API. It contains
+// all the information about the plugin.
 type Plugin struct {
 	LatestReleaseAtAtom           time.Time `json:"latest_release_at_atom"`
 	LatestReleaseAt               string    `json:"latest_release_at"`
@@ -104,12 +118,14 @@ type Plugin struct {
 	AuthorID string `json:"author_id"`
 }
 
+// Search searches the umod.org API for plugins matching the given query.
 func Search(title string) (SearchResponse, error) {
 	link := fmt.Sprintf("%v?query=%v&sort=latest_release_at&sortdir=desc&page=1", baseURL, url.QueryEscape(title))
 
 	return doRequest(link)
 }
 
+// Latest returns the latest plugins published on umod.org.
 func Latest() (SearchResponse, error) {
 	return doRequest(fmt.Sprintf("%v?sort=latest_release_at&sortdir=desc&page=1", baseURL))
 }
