@@ -2,48 +2,61 @@ package umod
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"time"
 )
 
-var (
-	ParseError = errors.New("unable to parse")
-)
-
 const (
 	baseURL = "https://umod.org/plugins/search.json"
 )
 
+type client interface {
+	Get(url string) (*http.Response, error)
+}
+
+var (
+	httpClient client = &http.Client{
+		Timeout: time.Second * 5,
+	}
+)
+
+// SearchResponse is the response from the search endpoint.
 type SearchResponse struct {
-	CurrentPage  int       `json:"current_page"`
-	Data         []*Plugin `json:"data"`
-	FirstPageURL string    `json:"first_page_url"`
-	From         int       `json:"from"`
-	LastPage     int       `json:"last_page"`
-	LastPageURL  string    `json:"last_page_url"`
-	NextPageURL  string    `json:"next_page_url"`
-	Path         string    `json:"path"`
-	PerPage      int       `json:"per_page"`
-	PrevPageURL  string    `json:"prev_page_url"`
-	To           int       `json:"to"`
-	Total        int       `json:"total"`
+	CurrentPage  int      `json:"current_page"`
+	Data         []Plugin `json:"data"`
+	FirstPageURL string   `json:"first_page_url"`
+	From         int      `json:"from"`
+	LastPageNum  int      `json:"last_page"`
+	LastPageURL  string   `json:"last_page_url"`
+	NextPageURL  string   `json:"next_page_url"`
+	Path         string   `json:"path"`
+	PerPage      int      `json:"per_page"`
+	PrevPageURL  string   `json:"prev_page_url"`
+	To           int      `json:"to"`
+	Total        int      `json:"total"`
 }
 
-func (s *SearchResponse) PrevPage() (*SearchResponse, error) {
+func (s SearchResponse) PrevPage() (SearchResponse, error) {
 	if s.PrevPageURL == "" {
-		return nil, fmt.Errorf("no previous page")
+		return s, fmt.Errorf("no previous page")
 	}
-	return doRequest(s.PrevPageURL)
+	return doRequest(fmt.Sprintf("%v%v", baseURL, s.PrevPageURL))
 }
 
-func (s *SearchResponse) NextPage() (*SearchResponse, error) {
+func (s SearchResponse) NextPage() (SearchResponse, error) {
 	if s.NextPageURL == "" {
-		return nil, fmt.Errorf("no next page")
+		return s, fmt.Errorf("no next page")
 	}
-	return doRequest(s.NextPageURL)
+	return doRequest(fmt.Sprintf("%v%v", baseURL, s.NextPageURL))
+}
+
+func (s SearchResponse) LastPage() (SearchResponse, error) {
+	if s.LastPageURL == "" {
+		return s, fmt.Errorf("no last page") // this should never happen ?
+	}
+	return doRequest(fmt.Sprintf("%v%v", baseURL, s.LastPageURL))
 }
 
 type Plugin struct {
@@ -89,38 +102,30 @@ type Plugin struct {
 	TagsAll  string `json:"tags_all"`
 	Name     string `json:"name"`
 	AuthorID string `json:"author_id"`
-
-	location string
-	version  string
 }
 
-func (p *Plugin) String() string {
-	return p.Title
-}
-
-func Search(title string) (*SearchResponse, error) {
-	link := fmt.Sprintf("%v?query=%v&page=1&sort=latest_release_at&sortdir=desc", baseURL, url.QueryEscape(title))
+func Search(title string) (SearchResponse, error) {
+	link := fmt.Sprintf("%v?query=%v&sort=latest_release_at&sortdir=desc&page=1", baseURL, url.QueryEscape(title))
 
 	return doRequest(link)
 }
 
-func Latest() (*SearchResponse, error) {
-	return doRequest(fmt.Sprintf("%v?query=&page=1&sort=latest_release_at&sortdir=desc", baseURL))
+func Latest() (SearchResponse, error) {
+	return doRequest(fmt.Sprintf("%v?sort=latest_release_at&sortdir=desc&page=1", baseURL))
 }
 
-func doRequest(url string) (*SearchResponse, error) {
-	res, err := http.Get(url)
+func doRequest(url string) (SearchResponse, error) {
+	var search SearchResponse
+	res, err := httpClient.Get(url)
 	if err != nil {
-		return nil, err
+		return search, err
 	}
-
 	if res.StatusCode >= http.StatusBadRequest {
-		return nil, fmt.Errorf("non ok http status code: %v", res.StatusCode)
+		return search, fmt.Errorf("non ok http status code: %v", res.StatusCode)
 	}
 
-	var search *SearchResponse
 	if err := json.NewDecoder(res.Body).Decode(&search); err != nil {
-		return nil, err
+		return search, err
 	}
 
 	return search, nil
