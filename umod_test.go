@@ -80,7 +80,7 @@ func TestSearch(t *testing.T) {
 	}
 
 	t.Run("Category", func(t *testing.T) {
-		categories := []Category{Universal, _7DaysToDie, Hurtworld, ReignOfKings, Rust, TheForest}
+		categories := []Category{Universal, SevenDaysToDie, Hurtworld, ReignOfKings, Rust, TheForest}
 
 		for _, c := range categories {
 			resp, err := Search("", Categories(c))
