@@ -131,7 +131,8 @@ func Query(query string) SearchOption {
 	}
 }
 
-// Search searches the umod.org API for plugins matching the given query.
+// Search searches the umod.org API for Plugin(s) matching the given query.
+// Use the SearchOption functions to modify the search parameters.
 func Search(title string, opts ...SearchOption) (SearchResponse, error) {
 	return search(title, opts...)
 }
