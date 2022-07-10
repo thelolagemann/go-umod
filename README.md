@@ -17,11 +17,13 @@ go get -u github.com/thelolagemann/go-umod
 ```
 
 ### Usage
+
+#### Plugin Searching
 ```go
 // Search for a plugin
 var names []string
 results, _ := umod.Search("heli")
-for _, result := range results.Data {
+for _, result := range results.Plugins {
 	names = append(names, result.Name)
 }
 fmt.Println(strings.Join(names, ", "))
@@ -31,15 +33,61 @@ fmt.Println(strings.Join(names, ", "))
 // Get the most recently updated plugins
 var names []string
 results, _ := umod.Latest()
-for _, result := range results.Data {
+for _, result := range results.Plugins {
 	names = append(names, result.Name)
 }
 fmt.Println(strings.Join(names, ", "))
 
 // Output: Kits, OptimalBurn, NightZombies, NeverWear, MountComputerStation, SafeRecycler, ComputersPlus, CarRadio, DiscordLinker, XPerience
+
+// Search with parameters
+var names []string
+results, _ := umod.Search("heli", umod.Tags("fun", "mechanics"), umod.SortDescending("latest_release_at"))
+for _, result := range results.Plugins {
+	names = append(names, result.Name)
+}
+fmt.Println(strings.Join(names, ", "))
+
+// Output: AdvancedArrows, SuicideBomber
+
+// Search for plugins specific to a game
+var names []string
+results, _ := umod.Search("", umod.Categories(umod.SevenDaysToDie))
+for _, result := range results.Plugins {
+	names = append(names, result.Name)
+}
+fmt.Println(strings.Join(names, ", "))
+
+// Output: AutomaticPluginUpdater, DegreeTags, CraftingStore, DaySeven, DiscordLinker, Give, ImgurApi, Punish, SDTeleportation, SleeperGroup
+```
+
+#### Games
+
+```go
+// Get all games
+var names []string
+games, _ := umod.Games()
+for _, game := range games {
+	names = append(names, game.Name)
+}
+fmt.Println(strings.Join(names, ", "))
+
+// Output: Rust, Hurtworld, 7 Days To Die, Reign Of Kings, The Forest, Heat
+
+// You can also search for plugins specific to a game
+// using the Game.Search method, although this is simply
+// a shortcut for calling umod.Search with the game's category slug.
+var names []string
+results, _ := games[0].Search("kits")
+for _, result := range results.Plugins {
+	names = append(names, result.Name)
+}
+fmt.Println(strings.Join(names, ", "))
+
+// Output:  CustomAutoKits, WipeKits, Kits, Murderers, Factions, EasyTeams, FactionsCore, CustomSets, Battlefield, Loadoutless
 ```
 
 ### TODO 
-- [ ] Implement games endpoint
+- [x] Implement games endpoint
 - [ ] Add search parameters (game, author, etc.)
 - [ ] Pagination Examples
