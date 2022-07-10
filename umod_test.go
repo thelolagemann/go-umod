@@ -79,6 +79,59 @@ func TestSearch(t *testing.T) {
 		t.Errorf("Search() returned zero time")
 	}
 
+	t.Run("Category", func(t *testing.T) {
+		categories := []Category{Universal, _7DaysToDie, Hurtworld, ReignOfKings, Rust, TheForest}
+
+		for _, c := range categories {
+			resp, err := Search("", Categories(c))
+			if err != nil {
+				t.Errorf("Search() returned error: %v", err)
+			}
+			if len(resp.Plugins) == 0 {
+				t.Errorf("Search() returned no results %v", c)
+			}
+			for _, p := range resp.Plugins {
+				hasSupport := false
+				for _, g := range p.GamesDetail {
+					if g.Slug == string(c) {
+						hasSupport = true
+					}
+				}
+				if !hasSupport {
+					t.Errorf("Search() returned wrong games, expecting: %v, got: %v", string(c), p.GamesDetail)
+				}
+			}
+		}
+	})
+	t.Run("Page", func(t *testing.T) {
+		resp, err := Search("", Page(2))
+		if err != nil {
+			t.Errorf("Search() returned error: %v", err)
+		}
+		if resp.Plugins[0].LatestReleaseAtAtom.IsZero() {
+			t.Errorf("Search() returned zero time")
+		}
+		if resp.CurrentPage != 2 {
+			t.Errorf("Search() returned wrong page, expecting: 2, got: %v", resp.CurrentPage)
+		}
+	})
+	t.Run("Tag", func(t *testing.T) {
+		tags := []string{"fun", "mechanics"}
+		resp, err = Search("", Tags(tags...))
+		if err != nil {
+			t.Errorf("Search() returned error: %v", err)
+		}
+		if len(resp.Plugins) == 0 {
+			t.Errorf("Search() returned no results")
+		}
+		for _, p := range resp.Plugins {
+			for _, tag := range tags {
+				if !strings.Contains(p.TagsAll, tag) {
+					t.Errorf("Search() returned wrong tags, expecting: %v, got: %v", tags, p.TagsAll)
+				}
+			}
+		}
+	})
 }
 
 func TestPagination(t *testing.T) {
@@ -175,6 +228,24 @@ func TestGames(t *testing.T) {
 	if resp[0].LatestReleaseAtAtom.IsZero() {
 		t.Errorf("Games() returned zero time")
 	}
+
+	t.Run("Search", func(t *testing.T) {
+		for _, g := range resp {
+			if g.Slug == "heat" {
+				continue // has no plugins
+			}
+			resp, err := g.Search("")
+			if err != nil {
+				t.Errorf("Search() returned error: %v", err)
+			}
+			if len(resp.Plugins) == 0 {
+				t.Errorf("Search() returned no results")
+			}
+			if !searchHasGame(resp, g.Slug) {
+				t.Errorf("Search() returned wrong game, expecting: %v, got: %v", g.Slug, resp)
+			}
+		}
+	})
 }
 
 func TestRequest(t *testing.T) {
@@ -203,37 +274,13 @@ func TestRequest(t *testing.T) {
 	})
 }
 
-func TestFilter(t *testing.T) {
-	resp, err := Search("heli", Tags("fun", "voting"))
-	if err != nil {
-		t.Errorf("Search() returned error: %v", err)
-	}
+func searchHasGame(resp SearchResponse, gameSlug string) bool {
 	for _, p := range resp.Plugins {
-		if strings.Contains("fun", p.TagsAll) && strings.Contains("voting", p.TagsAll) {
-			t.Errorf("Search() returned wrong tags")
-		}
-	}
-
-	categories := []Category{Universal, _7DaysToDie, Hurtworld, ReignOfKings, Rust, TheForest}
-
-	for _, c := range categories {
-		resp, err := Search("", Categories(c))
-		if err != nil {
-			t.Errorf("Search() returned error: %v", err)
-		}
-		if len(resp.Plugins) == 0 {
-			t.Errorf("Search() returned no results %v", c)
-		}
-		for _, p := range resp.Plugins {
-			hasSupport := false
-			for _, g := range p.GamesDetail {
-				if g.Slug == string(c) {
-					hasSupport = true
-				}
-			}
-			if !hasSupport {
-				t.Errorf("Search() returned wrong games, expecting: %v, got: %v", string(c), p.GamesDetail)
+		for _, g := range p.GamesDetail {
+			if g.Slug == gameSlug {
+				return true
 			}
 		}
 	}
+	return false
 }

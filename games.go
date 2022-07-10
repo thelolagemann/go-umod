@@ -74,3 +74,23 @@ func (g Game) Search(title string, opts ...SearchOption) (SearchResponse, error)
 	opts = append(opts, Categories(Category(g.Slug)))
 	return search(title, opts...)
 }
+
+// Category is a simple string wrapper that wraps a category slug. It is used
+// with the Categories functional option to specify the categories that the
+// plugins must be compatible with.
+type Category string
+
+const (
+	// Universal is the category for plugins that are not specific to any game.
+	Universal Category = "universal"
+	// _7DaysToDie is the category for plugins that are compatible with 7 days to die
+	_7DaysToDie Category = "7-days-to-die"
+	// Hurtworld is the category for plugins that are compatible with Hurtworld
+	Hurtworld Category = "hurtworld"
+	// ReignOfKings is the category for plugins that are compatible with Reign of Kings
+	ReignOfKings Category = "reign-of-kings"
+	// Rust is the category for plugins that are compatible with Rust
+	Rust Category = "rust"
+	// TheForest is the category for plugins that are compatible with The Forest
+	TheForest Category = "the-forest"
+)
