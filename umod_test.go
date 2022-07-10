@@ -75,7 +75,7 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Search() returned error: %v", err)
 	}
-	if resp.Data[0].LatestReleaseAtAtom.IsZero() {
+	if resp.Plugins[0].LatestReleaseAtAtom.IsZero() {
 		t.Errorf("Search() returned zero time")
 	}
 
@@ -152,7 +152,7 @@ func TestLatest(t *testing.T) {
 	if err != nil {
 		t.Errorf("Latest() returned error: %v", err)
 	}
-	if resp.Data[0].LatestReleaseAtAtom.IsZero() {
+	if resp.Plugins[0].LatestReleaseAtAtom.IsZero() {
 		t.Errorf("Latest() returned zero time")
 	} // TODO test is in ascending order
 }
@@ -162,7 +162,7 @@ func TestOldest(t *testing.T) {
 	if err != nil {
 		t.Errorf("Oldest() returned error: %v", err)
 	}
-	if resp.Data[0].LatestReleaseAtAtom.IsZero() {
+	if resp.Plugins[0].LatestReleaseAtAtom.IsZero() {
 		t.Errorf("Oldest() returned zero time")
 	}
 }
@@ -208,23 +208,23 @@ func TestFilter(t *testing.T) {
 	if err != nil {
 		t.Errorf("Search() returned error: %v", err)
 	}
-	for _, p := range resp.Data {
+	for _, p := range resp.Plugins {
 		if strings.Contains("fun", p.TagsAll) && strings.Contains("voting", p.TagsAll) {
 			t.Errorf("Search() returned wrong tags")
 		}
 	}
 
-	categories := []Category{CategoryUniversal, Category7DaysToDie, CategoryHurtworld, CategoryReignOfKings, CategoryRust, CategoryTheForest}
+	categories := []Category{Universal, _7DaysToDie, Hurtworld, ReignOfKings, Rust, TheForest}
 
 	for _, c := range categories {
 		resp, err := Search("", Categories(c))
 		if err != nil {
 			t.Errorf("Search() returned error: %v", err)
 		}
-		if len(resp.Data) == 0 {
+		if len(resp.Plugins) == 0 {
 			t.Errorf("Search() returned no results %v", c)
 		}
-		for _, p := range resp.Data {
+		for _, p := range resp.Plugins {
 			hasSupport := false
 			for _, g := range p.GamesDetail {
 				if g.Slug == string(c) {

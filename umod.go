@@ -1,3 +1,5 @@
+// Package umod is a small library for interacting with the umod.org REST API,
+// providing a simple way to search for plugins.
 package umod
 
 import (
@@ -32,7 +34,7 @@ var (
 // See: https://umod.org/plugins/search.json
 type SearchResponse struct {
 	CurrentPage  int      `json:"current_page"`
-	Data         []Plugin `json:"data"`
+	Plugins      []Plugin `json:"data"`
 	FirstPageURL string   `json:"first_page_url"`
 	From         int      `json:"from"`
 	LastPageNum  int      `json:"last_page"`
@@ -87,27 +89,7 @@ func Categories(categories ...Category) SearchOption {
 	}
 }
 
-// Category is a simple string wrapper that wraps a category slug. It is used
-// with the Categories functional option to specify the categories that the
-// plugins must be compatible with.
-type Category string
-
-const (
-	// CategoryUniversal is the category for plugins that are not specific to any game.
-	CategoryUniversal Category = "universal"
-	// Category7DaysToDie is the category for plugins that are compatible with 7 days to die
-	Category7DaysToDie Category = "7-days-to-die"
-	// CategoryHurtworld is the category for plugins that are compatible with Hurtworld
-	CategoryHurtworld Category = "hurtworld"
-	// CategoryReignOfKings is the category for plugins that are compatible with Reign of Kings
-	CategoryReignOfKings Category = "reign-of-kings"
-	// CategoryRust is the category for plugins that are compatible with Rust
-	CategoryRust Category = "rust"
-	// CategoryTheForest is the category for plugins that are compatible with The Forest
-	CategoryTheForest Category = "the-forest"
-)
-
-// TODO: add description
+// Tags specifies the tags that plugins must be tagged with.
 func Tags(tags ...string) SearchOption {
 	return func(v *url.Values) {
 		for i, tag := range tags {
