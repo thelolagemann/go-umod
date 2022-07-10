@@ -83,8 +83,8 @@ type Category string
 const (
 	// Universal is the category for plugins that are not specific to any game.
 	Universal Category = "universal"
-	// _7DaysToDie is the category for plugins that are compatible with 7 days to die
-	_7DaysToDie Category = "7-days-to-die"
+	// SevenDaysToDie is the category for plugins that are compatible with 7 days to die
+	SevenDaysToDie Category = "7-days-to-die"
 	// Hurtworld is the category for plugins that are compatible with Hurtworld
 	Hurtworld Category = "hurtworld"
 	// ReignOfKings is the category for plugins that are compatible with Reign of Kings
