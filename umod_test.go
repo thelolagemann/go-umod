@@ -79,6 +79,24 @@ func TestSearch(t *testing.T) {
 		t.Errorf("Search() returned zero time")
 	}
 
+	t.Run("Author", func(t *testing.T) {
+		authors := []string{"Wulf", "Gonzi"}
+		for _, author := range authors {
+			resp, err := Search("", Author(author))
+			if err != nil {
+				t.Errorf("Search() returned error: %v", err)
+			}
+			if len(resp.Plugins) == 0 {
+				t.Errorf("Search() returned no results")
+			}
+			for _, plugin := range resp.Plugins {
+				if plugin.Author != author {
+					t.Errorf("Search() returned wrong author, expecting: %v, got: %v", author, plugin.Author)
+				}
+			}
+		}
+	})
+
 	t.Run("Category", func(t *testing.T) {
 		categories := []Category{Universal, SevenDaysToDie, Hurtworld, ReignOfKings, Rust, TheForest}
 

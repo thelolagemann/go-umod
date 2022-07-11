@@ -80,6 +80,14 @@ func (s SearchResponse) LastPage() (SearchResponse, error) {
 // the Search function.
 type SearchOption func(*url.Values)
 
+// Author specifies the author of the plugins to search for, only one
+// author can be specified.
+func Author(author string) SearchOption {
+	return func(v *url.Values) {
+		v.Set("author", author)
+	}
+}
+
 // Categories specifies the categories that the plugins must be compatible with.
 func Categories(categories ...Category) SearchOption {
 	return func(v *url.Values) {
