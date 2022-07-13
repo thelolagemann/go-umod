@@ -20,7 +20,6 @@ type mockClient struct {
 func (m *mockClient) Get(url string) (*http.Response, error) {
 	res, ok := m.responses[url]
 	if !ok {
-		fmt.Println("first call to", url, " creating mock response")
 		r, err := http.Get(url)
 		if err != nil {
 			return nil, err
